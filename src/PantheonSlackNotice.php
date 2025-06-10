@@ -20,33 +20,38 @@ class PantheonSlackNotice {
     $fileSystem = new Filesystem();
     $io = $event->getIO();
 
-    // Try {
-    //   $color = NULL;
-    //   foreach ($event->getArguments() as $arg) {
-    //     if (substr($arg, 0, 8) === '--color=') {
-    //       $color = substr($arg, 8);
-    //       break;
-    //     }
-    //   }
-    //   if ($color === NULL) {
-    //     $color = $io->ask('<info>Primary HEX color? (Default: #2780e3)</info>:' . "\n > #", '#2780e3');
-    //   }
-    //   $color = '#' . preg_replace('/[^a-f0-9]/', '', $color);.
-    // $settingsPath = './.vscode/settings.json';
-    //   $settings = [];
-    //   if ($fileSystem->exists($settingsPath)) {
-    //     $jsonString = file_get_contents($settingsPath);
-    //     $settings = json_decode($jsonString, TRUE);
-    //   }
-    //   $settings['workbench.colorCustomizations']['titleBar.activeForeground'] = '#f1f1f1';
-    //   $settings['workbench.colorCustomizations']['titleBar.inactiveForeground'] = '#f1f1f1cc';
-    //   $settings['workbench.colorCustomizations']['titleBar.activeBackground'] = $color;
-    //   $settings['workbench.colorCustomizations']['titleBar.inactiveBackground'] = $color . 'cc';
-    //   $fileSystem->dumpFile($settingsPath, json_encode($settings, JSON_PRETTY_PRINT));
-    // }
-    // catch (\Error $e) {
-    //   $io->error('<error>' . $e->getMessage() . '</error>');
-    // }
+    // Secrets setup.
+    try {
+      $secretsPath = './web/sites/default/files/private/secrets.json';
+      if (!$fileSystem->exists($secretsPath)) {
+        $fileSystem->mkdir(dirname($secretsPath));
+        $fileSystem->dumpFile($secretsPath, '{}');
+      }
+      // Prompt the user to add their Slack URL and channel.
+      $slackUrl = $io->ask('<info>Enter your Slack webhook URL:</info>', '', function ($answer) {
+        if (empty($answer)) {
+          throw new \InvalidArgumentException('Slack webhook URL cannot be empty.');
+        }
+        return $answer;
+      });
+      $secrets = json_decode($fileSystem->exists($secretsPath) ? file_get_contents($secretsPath) : '{}', TRUE);
+      $secrets['slack_url'] = $slackUrl;
+      $fileSystem->dumpFile($secretsPath, json_encode($secrets, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+      $slackChannel = $io->ask('<info>Enter your Slack channel (optional):</info>', '', function ($answer) {
+        if (empty($answer)) {
+          throw new \InvalidArgumentException('Slack channel can not be empty.');
+        }
+        return $answer;
+      });
+      if (!empty($slackChannel)) {
+        $secrets['slack_channel'] = $slackChannel;
+        $fileSystem->dumpFile($secretsPath, json_encode($secrets, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+      }
+    }
+    catch (\Error $e) {
+      $io->error('<error>' . $e->getMessage() . '</error>');
+    }
+
     // pantheon.yml.
     try {
       $ymlPath = './pantheon.yml';
