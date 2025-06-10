@@ -37,7 +37,7 @@ class PantheonSlackNotice {
       $secrets = json_decode($fileSystem->exists($secretsPath) ? file_get_contents($secretsPath) : '{}', TRUE);
       $secrets['slack_url'] = $slackUrl;
       $fileSystem->dumpFile($secretsPath, json_encode($secrets, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-      $slackChannel = $io->ask('<info>Enter your Slack channel (optional):</info>', '', function ($answer) {
+      $slackChannel = $io->ask('<info>Enter your Slack channel:</info>', '', function ($answer) {
         if (empty($answer)) {
           throw new \InvalidArgumentException('Slack channel can not be empty.');
         }
