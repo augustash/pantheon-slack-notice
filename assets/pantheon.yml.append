@@ -1,0 +1,6 @@
+workflows:
+  deploy:
+    after:
+      - type: webphp
+        description: Post to Slack after deploy
+        script: private/scripts/slack_notification.php

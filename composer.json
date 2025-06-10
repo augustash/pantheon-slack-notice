@@ -1,0 +1,15 @@
+{
+  "name": "augustash/pantheon-slack-notice",
+  "description": "Provides a slack notice upon a Pantheon deploy.",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "drupal/core": "^10 || ^11",
+    "oomphinc/composer-installers-extender": "^2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Augustash\\": "src/"
+    }
+  }
+}
