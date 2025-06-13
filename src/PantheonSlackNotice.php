@@ -22,19 +22,6 @@ class PantheonSlackNotice {
 
     // Secrets setup.
     try {
-      // Prompt the user to add their Slack URL and channel.
-      $slackUrl = $io->ask('<info>Enter your Slack webhook URL:</info>', '', function ($answer) {
-        if (empty($answer)) {
-          throw new \InvalidArgumentException('Slack webhook URL cannot be empty.');
-        }
-        return $answer;
-      });
-      $slackChannel = $io->ask('<info>Enter your Slack channel:</info>', '', function ($answer) {
-        if (empty($answer)) {
-          throw new \InvalidArgumentException('Slack channel can not be empty.');
-        }
-        return $answer;
-      });
       // Check if terminus is installed.
       $terminusPath = exec('which terminus');
 
@@ -63,6 +50,19 @@ class PantheonSlackNotice {
             $io->error('<error>Terminus Secrets plugin is not installed. Please install it with: `terminus self:plugin:install terminus-secrets-plugin`</error>');
           }
           else {
+            // Prompt the user to add their Slack URL and channel.
+            $slackUrl = $io->ask('<info>Enter your Slack webhook URL:</info>', '', function ($answer) {
+              if (empty($answer)) {
+                throw new \InvalidArgumentException('Slack webhook URL cannot be empty.');
+              }
+              return $answer;
+            });
+            $slackChannel = $io->ask('<info>Enter your Slack channel:</info>', '', function ($answer) {
+              if (empty($answer)) {
+                throw new \InvalidArgumentException('Slack channel can not be empty.');
+              }
+              return $answer;
+            });
             $site = $io->ask('<info>Enter your Pantheon site.env:</info>', '', function ($answer) {
               if (empty($answer)) {
                 throw new \InvalidArgumentException('Site can not be empty.');
