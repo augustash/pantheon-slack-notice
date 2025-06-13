@@ -23,7 +23,7 @@ class PantheonSlackNotice {
     // Check if we are inside ddev or not.
     $isDdev = getenv('IS_DDEV_PROJECT') === 'true';
     if ($isDdev) {
-      $io->write('<info>Running inside DDEV this command needs to be run outside of DDEV so Terminus has the needed permissions.</info>');
+      $io->write('<info>🛑 Running inside DDEV. This command needs to be run outside of DDEV so Terminus has the needed permissions.</info>');
       return;
     }
 
