@@ -1,7 +1,7 @@
 <?php
 
 if ($_ENV['PANTHEON_ENVIRONMENT'] !== 'live') {
-    exit;
+  exit;
 }
 
 // Important constants :)
@@ -141,17 +141,17 @@ _slack_notification($secrets['slack_url'], $secrets['slack_channel'], $secrets['
 function _get_secrets($requiredKeys, $defaults) {
   $secretsFile = $_SERVER['HOME'] . '/files/private/secrets.json';
   if (!file_exists($secretsFile)) {
-      die('No secrets file found. Aborting!');
+    die('No secrets file found. Aborting!');
   }
   $secretsContents = file_get_contents($secretsFile);
   $secrets = json_decode($secretsContents, 1);
   if ($secrets == false) {
-      die('Could not parse json in secrets file. Aborting!');
+    die('Could not parse json in secrets file. Aborting!');
   }
   $secrets += $defaults;
   $missing = array_diff($requiredKeys, array_keys($secrets));
   if (!empty($missing)) {
-      die('Missing required keys in json secrets file: ' . implode(',', $missing) . '. Aborting!');
+    die('Missing required keys in json secrets file: ' . implode(',', $missing) . '. Aborting!');
   }
   return $secrets;
 }
@@ -162,13 +162,13 @@ function _get_secrets($requiredKeys, $defaults) {
 function _slack_notification($slack_url, $channel, $username, $text, $attachment, $alwaysShowText = false) {
   $attachment['fallback'] = $text;
   $post = array(
-  'username' => $username,
-  'channel' => $channel,
-  'icon_emoji' => ':lightning_cloud:',
-  'attachments' => array($attachment)
+    'username' => $username,
+    'channel' => $channel,
+    'icon_emoji' => ':lightning_cloud:',
+    'attachments' => array($attachment)
   );
   if ($alwaysShowText) {
-      $post['text'] = $text;
+    $post['text'] = $text;
   }
   $payload = json_encode($post);
   $ch = curl_init();
