@@ -58,25 +58,25 @@ class PantheonSlackNotice {
           }
           else {
             // Prompt the user to add their Slack URL and channel.
-            $slackUrl = $io->ask('<info>Enter your Slack webhook URL:</info>', '', function ($answer) {
+            $slackUrl = $io->ask('<info>Enter your Slack webhook URL: </info>', '', function ($answer) {
               if (empty($answer)) {
                 throw new \InvalidArgumentException('Slack webhook URL cannot be empty.');
               }
               return $answer;
             });
-            $slackChannel = $io->ask('<info>Enter your Slack channel:</info>', '', function ($answer) {
+            $slackChannel = $io->ask('<info>Enter your Slack channel: </info>', '', function ($answer) {
               if (empty($answer)) {
                 throw new \InvalidArgumentException('Slack channel can not be empty.');
               }
               return $answer;
             });
-            $site = $io->ask('<info>Enter your Pantheon site.env:</info>', '', function ($answer) {
+            $site = $io->ask('<info>Enter your Pantheon site.env: </info>', '', function ($answer) {
               if (empty($answer)) {
                 throw new \InvalidArgumentException('Site can not be empty.');
               }
               return $answer;
             });
-            $io->write('<info>Secrets plugin is installed. Write to ' . $site . ' to generate a secrets file.</info>');
+            $io->write('<info>Secrets plugin is installed. Writing to ' . $site . ' to generate a secrets file.</info>');
 
             $secrets = [
               'slack_url' => $slackUrl,
