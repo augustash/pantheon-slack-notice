@@ -68,10 +68,9 @@ class PantheonSlackNotice {
     // Slack notification script.
     try {
       $scriptPath = './web/private/scripts/slack_notification.php';
-      if (!$fileSystem->exists($scriptPath)) {
-        $fileSystem->mkdir(dirname($scriptPath));
-        $fileSystem->dumpFile($scriptPath, file_get_contents(__DIR__ . '/../assets/slack_notification.php'));
-      }
+      $fileSystem->mkdir(dirname($scriptPath));
+      // Always overwrite the file, even if it exists.
+      $fileSystem->dumpFile($scriptPath, file_get_contents(__DIR__ . '/../assets/slack_notification.php'));
     }
     catch (\Error $e) {
       $io->error('<error>' . $e->getMessage() . '</error>');
