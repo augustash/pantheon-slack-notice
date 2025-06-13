@@ -20,6 +20,13 @@ class PantheonSlackNotice {
     $fileSystem = new Filesystem();
     $io = $event->getIO();
 
+    // Check if we are inside ddev or not.
+    $isDdev = getenv('IS_DDEV_PROJECT') === 'true';
+    if ($isDdev) {
+      $io->write('<info>Running inside DDEV this command needs to be run outside of DDEV so Terminus has the needed permissions.</info>');
+      return;
+    }
+
     // Secrets setup.
     try {
       // Check if terminus is installed.
