@@ -24,5 +24,6 @@ composer require augustash/pantheon-slack-notice && composer slack-notice
 ```
 
 ## Note:
-- You will need to manually move the secrets file in `web/sites/default/files/private/secrets.json` through your Pantheon environments.
+- You will need Pantheon's CLI tool [Terminus](https://github.com/pantheon-systems/terminus) as well as the [Terminus Secrets Plugin](https://github.com/pantheon-systems/terminus-secrets-plugin) to generate the secrets file automatically.
+- You will be asked to provide your Pantheon site name and env.
 - You will need to know your slack webhook URL and slack channel ID to pass to the prompt to generate a secrets file.
