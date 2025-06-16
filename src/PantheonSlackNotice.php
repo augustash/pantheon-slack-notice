@@ -4,11 +4,20 @@ namespace Augustash;
 
 use Composer\Script\Event;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Yaml\Yaml;
+
 
 /**
  * Pantheon Slack Notice console class.
  */
 class PantheonSlackNotice {
+
+  /**
+   * Path to config file.
+   *
+   * @var string
+   */
+  private static $configPath = __DIR__ . '/../../../../.ddev/config.yaml';
 
   /**
    * Run on post-install-cmd.
@@ -20,13 +29,6 @@ class PantheonSlackNotice {
     $fileSystem = new Filesystem();
     $io = $event->getIO();
 
-    // Check if we are inside ddev or not.
-    $isDdev = getenv('IS_DDEV_PROJECT') === 'true';
-    if ($isDdev) {
-      $io->write('<info>🛑 Running inside DDEV. This command needs to be run outside of DDEV so Terminus has the needed permissions.</info>');
-      return;
-    }
-
     // Secrets setup.
     try {
       // Check if terminus is installed.
@@ -34,71 +36,45 @@ class PantheonSlackNotice {
 
       if (empty($terminusPath)) {
         $io->error('<error>Terminus is not installed. Please install Terminus to use Pantheon Slack Notice. https://github.com/pantheon-systems/terminus</error>');
+        exit;
       }
-      else {
-        // Get plugin list as JSON.
-        $pluginJson = shell_exec('terminus self:plugin:list --format=json');
-        $plugins = json_decode($pluginJson, TRUE);
 
-        $pluginFound = FALSE;
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-          $io->error('<error>Failed to parse Terminus plugin list. Check Terminus installation or permissions.</error>');
-        }
-        elseif (is_array($plugins)) {
-          foreach ($plugins as $plugin) {
-            if (!empty($plugin['name']) && $plugin['name'] === 'terminus-secrets-plugin') {
-              $pluginFound = TRUE;
-              break;
-            }
-          }
-
-          if (!$pluginFound) {
-            $io->error('<error>Terminus Secrets plugin is not installed. Please install it with: `terminus self:plugin:install terminus-secrets-plugin`</error>');
-          }
-          else {
-            // Prompt the user to add their Slack URL and channel.
-            $slackUrl = $io->ask('<info>Enter your Slack webhook URL: </info>', '', function ($answer) {
-              if (empty($answer)) {
-                throw new \InvalidArgumentException('Slack webhook URL cannot be empty.');
-              }
-              return $answer;
-            });
-            $slackChannel = $io->ask('<info>Enter your Slack channel: </info>', '', function ($answer) {
-              if (empty($answer)) {
-                throw new \InvalidArgumentException('Slack channel can not be empty.');
-              }
-              return $answer;
-            });
-            $site = $io->ask('<info>Enter your Pantheon site.env: </info>', '', function ($answer) {
-              if (empty($answer)) {
-                throw new \InvalidArgumentException('Site can not be empty.');
-              }
-              return $answer;
-            });
-            $io->write('<info>Secrets plugin is installed. Writing to ' . $site . ' to generate a secrets file.</info>');
-
-            $secrets = [
-              'slack_url' => $slackUrl,
-              'slack_channel' => $slackChannel,
-            ];
-
-            foreach ($secrets as $key => $value) {
-              $cmd = sprintf(
-                'terminus secrets:set ' . $site . ' %s %s',
-                escapeshellarg($key),
-                escapeshellarg($value)
-              );
-              shell_exec($cmd);
-            }
-
-            $output = shell_exec('terminus secrets:list ' . escapeshellarg($site));
-            $io->write(PHP_EOL);
-            $io->write('<info>✅ Secrets file successfully generated for ' . $site . ':</info>' . PHP_EOL);
-            $io->write('<comment>' . trim($output) . '</comment>' . PHP_EOL);
-          }
-        }
+      // Check for Terminus Secrets Plugin.
+      $secretsPlugin = shell_exec('terminus self:plugin:list --field=name | grep terminus-secrets-plugin');
+      if (!$secretsPlugin) {
+        shell_exec('terminus self:plugin:install terminus-secrets-plugin');
       }
+
+      // Prompt the user to add their Slack URL and channel.
+      $slackUrl = $io->ask('<info>Enter your Slack webhook URL: </info>', '', function ($answer) {
+        if (empty($answer)) {
+          throw new \InvalidArgumentException('Slack webhook URL cannot be empty.');
+        }
+        return $answer;
+      });
+      $slackChannel = $io->ask('<info>Enter your Slack channel: </info>', '', function ($answer) {
+        if (empty($answer)) {
+          throw new \InvalidArgumentException('Slack channel can not be empty.');
+        }
+        return $answer;
+      });
+
+      $site = str_replace('project=', '', Yaml::parseFile(static::$configPath)['web_environment'][0]);
+      $io->write('<info>Writing secrets to ' . $site . ' file.</info>');
+
+      $secrets = [
+        'slack_url' => $slackUrl,
+        'slack_channel' => $slackChannel,
+      ];
+
+      foreach ($secrets as $key => $value) {
+        shell_exec('terminus secrets:set ' . $site . ' ' . $key . ' ' . $value);
+      }
+
+      $output = shell_exec('terminus secrets:list ' . escapeshellarg($site));
+      $io->write(PHP_EOL);
+      $io->write('<info>✅ Secrets file successfully generated for ' . $site . ':</info>' . PHP_EOL);
+      $io->write('<comment>' . trim($output) . '</comment>' . PHP_EOL);
     }
     catch (\Error $e) {
       $io->error('<error>' . $e->getMessage() . '</error>');
